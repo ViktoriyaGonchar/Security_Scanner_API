@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Scanner API - Web Vulnerability Scanner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-bg: #1a1a2e;
+            --card-bg: #16213e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .scanner-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .results-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .scan-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .scan-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .risk-badge {
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        .risk-safe {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .risk-low {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .risk-medium {
+            background-color: #ffeaa7;
+            color: #d63031;
+        }
+
+        .risk-high {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .finding-card {
+            border-left: 4px solid;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .finding-xss {
+            border-color: var(--danger-color);
+        }
+
+        .finding-sqli {
+            border-color: var(--warning-color);
+        }
+
+        .severity-badge {
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .severity-high {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .severity-medium {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .severity-low {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .spinner-border {
+            display: none;
+        }
+
+        .loading .spinner-border {
+            display: inline-block;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .price-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        h1 {
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container main-container">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg mb-3" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 15px;">
+            <div class="container-fluid">
+                <a class="navbar-brand text-white fw-bold" href="/">
+                    <i class="bi bi-shield-check"></i> Security Scanner
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/scanner">Scanner</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/admin-panel">Admin Panel</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/docs" target="_blank">API Docs</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Header -->
+        <div class="header-card text-center">
+            <h1><i class="bi bi-shield-check"></i> Security Scanner API</h1>
+            <p class="subtitle">Professional Web Vulnerability Scanner - Detect XSS and SQL Injection Threats</p>
+        </div>
+
+        <!-- Features -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="bi bi-bug"></i></div>
+                    <h4>XSS Detection</h4>
+                    <p>Advanced pattern matching to identify Cross-Site Scripting vulnerabilities</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="bi bi-database-exclamation"></i></div>
+                    <h4>SQL Injection</h4>
+                    <p>Comprehensive SQL injection detection using heuristic analysis</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="bi bi-speedometer2"></i></div>
+                    <h4>Fast & Accurate</h4>
+                    <p>Quick scanning with detailed risk assessment reports</p>
+                    <span class="price-tag">Premium scan: $19.99</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scanner Form -->
+        <div class="scanner-card">
+            <h3 class="mb-4"><i class="bi bi-search"></i> Scan Input</h3>
+            
+            <form id="scanForm">
+                <div class="mb-3">
+                    <label for="scanType" class="form-label">Scan Type</label>
+                    <select class="form-select" id="scanType" required>
+                        <option value="url">URL</option>
+                        <option value="text">Text</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="inputData" class="form-label">Input Data</label>
+                    <textarea 
+                        class="form-control" 
+                        id="inputData" 
+                        rows="5" 
+                        placeholder="Enter URL or text to scan..." 
+                        required
+                    ></textarea>
+                    <div class="form-text">For URLs, include http:// or https:// prefix</div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary scan-button">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <i class="bi bi-search me-2"></i>Start Scan
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results -->
+        <div class="results-card" id="resultsCard">
+            <h3 class="mb-4"><i class="bi bi-clipboard-data"></i> Scan Results</h3>
+            
+            <div class="mb-4">
+                <strong>Risk Level: </strong>
+                <span class="risk-badge" id="riskBadge">-</span>
+            </div>
+
+            <div class="alert" id="summaryAlert" role="alert"></div>
+
+            <div id="findingsContainer"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-5 mb-3">
+            <p class="text-white">
+                <small>
+                    © 2024 Security Scanner API | 
+                    <a href="/admin-panel" class="text-white text-decoration-underline">Admin Panel</a> | 
+                    <a href="/docs" class="text-white text-decoration-underline" target="_blank">API Documentation</a>
+                </small>
+            </p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const scanForm = document.getElementById('scanForm');
+        const resultsCard = document.getElementById('resultsCard');
+        const riskBadge = document.getElementById('riskBadge');
+        const summaryAlert = document.getElementById('summaryAlert');
+        const findingsContainer = document.getElementById('findingsContainer');
+
+        scanForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const scanType = document.getElementById('scanType').value;
+            const inputData = document.getElementById('inputData').value.trim();
+
+            if (!inputData) {
+                alert('Please enter data to scan');
+                return;
+            }
+
+            // Show loading state
+            scanForm.classList.add('loading');
+            resultsCard.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input_data: inputData,
+                        scan_type: scanType
+                    })
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+                }
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Scan failed');
+                }
+
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Scan error:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                scanForm.classList.remove('loading');
+            }
+        });
+
+        function displayResults(data) {
+            // Set risk level badge
+            riskBadge.textContent = data.risk_level.toUpperCase();
+            riskBadge.className = 'risk-badge risk-' + data.risk_level;
+
+            // Set summary alert
+            let alertClass = 'alert-info';
+            if (data.risk_level === 'high') {
+                alertClass = 'alert-danger';
+            } else if (data.risk_level === 'medium') {
+                alertClass = 'alert-warning';
+            } else if (data.risk_level === 'low') {
+                alertClass = 'alert-warning';
+            } else {
+                alertClass = 'alert-success';
+            }
+
+            summaryAlert.className = 'alert ' + alertClass;
+            summaryAlert.textContent = data.summary;
+
+            // Display findings
+            findingsContainer.innerHTML = '';
+
+            if (data.xss_findings && data.xss_findings.length > 0) {
+                const xssSection = document.createElement('div');
+                xssSection.innerHTML = '<h5 class="mt-4 mb-3"><i class="bi bi-exclamation-triangle-fill text-danger"></i> XSS Findings (' + data.xss_findings.length + ')</h5>';
+                
+                data.xss_findings.forEach(finding => {
+                    const card = createFindingCard(finding, 'xss');
+                    xssSection.appendChild(card);
+                });
+                
+                findingsContainer.appendChild(xssSection);
+            }
+
+            if (data.sqli_findings && data.sqli_findings.length > 0) {
+                const sqliSection = document.createElement('div');
+                sqliSection.innerHTML = '<h5 class="mt-4 mb-3"><i class="bi bi-database-exclamation text-warning"></i> SQL Injection Findings (' + data.sqli_findings.length + ')</h5>';
+                
+                data.sqli_findings.forEach(finding => {
+                    const card = createFindingCard(finding, 'sqli');
+                    sqliSection.appendChild(card);
+                });
+                
+                findingsContainer.appendChild(sqliSection);
+            }
+
+            if (data.xss_findings.length === 0 && data.sqli_findings.length === 0) {
+                findingsContainer.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> No vulnerabilities detected!</div>';
+            }
+
+            resultsCard.style.display = 'block';
+            resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function createFindingCard(finding, type) {
+            const card = document.createElement('div');
+            card.className = 'finding-card finding-' + type;
+            
+            const severityClass = 'severity-' + finding.severity;
+            
+            card.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>${finding.description}</strong>
+                        <div class="mt-2">
+                            <span class="severity-badge ${severityClass}">${finding.severity.toUpperCase()}</span>
+                        </div>
+                        <div class="mt-2 text-muted">
+                            <small>Matched: <code>${escapeHtml(finding.matched_text)}</code></small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Security Scanner API</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #1a1a2e;
+            --admin-card: #16213e;
+            --admin-accent: #0f3460;
+            --admin-text: #e94560;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .navbar-admin {
+            background-color: var(--admin-card);
+            border-bottom: 2px solid var(--admin-text);
+            padding: 15px 0;
+            margin-bottom: 30px;
+        }
+
+        .admin-card {
+            background-color: var(--admin-card);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(233, 69, 96, 0.2);
+        }
+
+        .login-card {
+            max-width: 400px;
+            margin: 100px auto;
+            background-color: var(--admin-card);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, var(--admin-text) 0%, #c0392b 100%);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .nav-link {
+            color: #fff !important;
+            margin: 0 10px;
+            padding: 8px 15px !important;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--admin-text);
+            color: #fff !important;
+        }
+
+        .table-dark {
+            background-color: var(--admin-accent);
+        }
+
+        .badge-success {
+            background-color: #28a745;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--admin-accent) 0%, var(--admin-card) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid var(--admin-text);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--admin-text);
+            margin: 10px 0;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--admin-accent);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            color: #fff;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--admin-accent);
+            border-color: var(--admin-text);
+            color: #fff;
+            box-shadow: 0 0 0 0.2rem rgba(233, 69, 96, 0.25);
+        }
+
+        .form-label {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="loginSection" class="login-card">
+        <h2 class="text-center mb-4"><i class="bi bi-shield-lock"></i> Admin Login</h2>
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" required>
+            </div>
+            <button type="submit" class="btn admin-btn w-100">Login</button>
+        </form>
+        <div id="loginError" class="alert alert-danger mt-3 hidden" role="alert"></div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden">
+        <nav class="navbar-admin">
+            <div class="admin-container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4><i class="bi bi-shield-check"></i> Security Scanner Admin</h4>
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-section="statistics">Statistics</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="history">Scan History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="rules">Rules</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-section="logs">Logs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="logoutBtn">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="admin-container">
+            <!-- Statistics Section -->
+            <div id="statisticsSection" class="section active">
+                <h3 class="mb-4"><i class="bi bi-bar-chart"></i> Statistics</h3>
+                <div class="row" id="statsContainer">
+                    <!-- Stats will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Scan History Section -->
+            <div id="historySection" class="section">
+                <div class="admin-card">
+                    <h3 class="mb-4"><i class="bi bi-clock-history"></i> Scan History</h3>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Input (Sanitized)</th>
+                                    <th>XSS</th>
+                                    <th>SQLi</th>
+                                    <th>Risk</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <!-- History will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rules Section -->
+            <div id="rulesSection" class="section">
+                <div class="admin-card">
+                    <h3 class="mb-4"><i class="bi bi-gear"></i> Scanning Rules</h3>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Pattern</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rulesTableBody">
+                                <!-- Rules will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Section -->
+            <div id="logsSection" class="section">
+                <div class="admin-card">
+                    <h3 class="mb-4"><i class="bi bi-file-text"></i> System Logs</h3>
+                    <div class="mb-3">
+                        <select class="form-select" id="logLevelFilter" style="max-width: 200px;">
+                            <option value="">All Levels</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                        </select>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Level</th>
+                                    <th>Message</th>
+                                    <th>Context</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <!-- Logs will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let authToken = localStorage.getItem('admin_token');
+
+        // Check if already logged in
+        if (authToken) {
+            showAdminPanel();
+            loadStatistics();
+        } else {
+            document.getElementById('loginSection').classList.remove('hidden');
+        }
+
+        // Update API URLs if needed
+        const baseURL = window.location.origin;
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Server returned non-JSON response. Check if the API is running correctly.`);
+                }
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Login failed');
+                }
+
+                authToken = data.access_token;
+                localStorage.setItem('admin_token', authToken);
+                showAdminPanel();
+                loadStatistics();
+
+            } catch (error) {
+                console.error('Login error:', error);
+                const errorDiv = document.getElementById('loginError');
+                errorDiv.textContent = error.message || 'Login failed. Please check your credentials.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            authToken = null;
+            localStorage.removeItem('admin_token');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+        });
+
+        // Navigation handler
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if (link.id !== 'logoutBtn') {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = link.getAttribute('data-section');
+                    switchSection(section);
+                    
+                    // Update active nav
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            }
+        });
+
+        function switchSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionName + 'Section').classList.add('active');
+
+            if (sectionName === 'statistics') {
+                loadStatistics();
+            } else if (sectionName === 'history') {
+                loadHistory();
+            } else if (sectionName === 'rules') {
+                loadRules();
+            } else if (sectionName === 'logs') {
+                loadLogs();
+            }
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+        }
+
+        function getAuthHeaders() {
+            return {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/admin/statistics', {
+                    headers: getAuthHeaders()
+                });
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        location.reload();
+                        return;
+                    }
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                const stats = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(stats.detail || 'Failed to load statistics');
+                }
+
+                const container = document.getElementById('statsContainer');
+                container.innerHTML = `
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <i class="bi bi-search" style="font-size: 32px;"></i>
+                            <div class="stat-number">${stats.total_scans || 0}</div>
+                            <div>Total Scans</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <i class="bi bi-exclamation-triangle" style="font-size: 32px;"></i>
+                            <div class="stat-number">${stats.xss_detected_count || 0}</div>
+                            <div>XSS Detected</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <i class="bi bi-database-exclamation" style="font-size: 32px;"></i>
+                            <div class="stat-number">${stats.sqli_detected_count || 0}</div>
+                            <div>SQLi Detected</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <i class="bi bi-file-text" style="font-size: 32px;"></i>
+                            <div class="stat-number">${stats.total_logs || 0}</div>
+                            <div>Total Logs</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+                if (error.message.includes('401') || error.message.includes('token')) {
+                    localStorage.removeItem('admin_token');
+                    location.reload();
+                }
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/admin/scan-history', {
+                    headers: getAuthHeaders()
+                });
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        location.reload();
+                        return;
+                    }
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to load history');
+                }
+
+                const tbody = document.getElementById('historyTableBody');
+                tbody.innerHTML = data.history.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.scan_type}</td>
+                        <td><small>${item.sanitized_data || item.input_data.substring(0, 50)}...</small></td>
+                        <td>${item.xss_detected ? '<span class="badge badge-danger">Yes</span>' : '<span class="badge badge-success">No</span>'}</td>
+                        <td>${item.sqli_detected ? '<span class="badge badge-danger">Yes</span>' : '<span class="badge badge-success">No</span>'}</td>
+                        <td><span class="badge badge-${getRiskBadgeClass(item.risk_level)}">${item.risk_level || 'N/A'}</span></td>
+                        <td>${new Date(item.created_at).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        async function loadRules() {
+            try {
+                const response = await fetch('/api/admin/rules', {
+                    headers: getAuthHeaders()
+                });
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        location.reload();
+                        return;
+                    }
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to load rules');
+                }
+
+                const tbody = document.getElementById('rulesTableBody');
+                tbody.innerHTML = data.rules.map(rule => `
+                    <tr>
+                        <td>${rule.id}</td>
+                        <td><span class="badge badge-${rule.rule_type === 'xss' ? 'danger' : 'warning'}">${rule.rule_type.toUpperCase()}</span></td>
+                        <td><code style="font-size: 11px;">${escapeHtml(rule.pattern.substring(0, 50))}...</code></td>
+                        <td>${rule.description}</td>
+                        <td>${rule.enabled ? '<span class="badge badge-success">Enabled</span>' : '<span class="badge badge-danger">Disabled</span>'}</td>
+                        <td>
+                            <button class="btn btn-sm admin-btn" onclick="toggleRule(${rule.id}, ${!rule.enabled})">
+                                ${rule.enabled ? 'Disable' : 'Enable'}
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading rules:', error);
+                if (error.message.includes('401')) {
+                    // Token expired
+                    localStorage.removeItem('admin_token');
+                    location.reload();
+                }
+            }
+        }
+
+        async function loadLogs() {
+            try {
+                const level = document.getElementById('logLevelFilter').value;
+                const url = `/api/admin/logs${level ? `?level=${level}` : ''}`;
+                
+                const response = await fetch(url, {
+                    headers: getAuthHeaders()
+                });
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        location.reload();
+                        return;
+                    }
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to load logs');
+                }
+
+                const tbody = document.getElementById('logsTableBody');
+                tbody.innerHTML = data.logs.map(log => `
+                    <tr>
+                        <td>${log.id}</td>
+                        <td><span class="badge badge-${getLogBadgeClass(log.level)}">${log.level}</span></td>
+                        <td>${log.message}</td>
+                        <td><small>${log.context || '-'}</small></td>
+                        <td>${new Date(log.created_at).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading logs:', error);
+            }
+        }
+
+        document.getElementById('logLevelFilter').addEventListener('change', loadLogs);
+
+        async function toggleRule(ruleId, enabled) {
+            try {
+                const response = await fetch(`/api/admin/rules/${ruleId}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ enabled })
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('admin_token');
+                        location.reload();
+                        return;
+                    }
+                    throw new Error('Server returned non-JSON response');
+                }
+                
+                const data = await response.json();
+
+                if (response.ok) {
+                    loadRules();
+                } else {
+                    alert(data.detail || 'Failed to update rule');
+                }
+            } catch (error) {
+                console.error('Error updating rule:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function getRiskBadgeClass(risk) {
+            if (!risk) return 'secondary';
+            risk = risk.toLowerCase();
+            if (risk === 'high') return 'danger';
+            if (risk === 'medium') return 'warning';
+            if (risk === 'low') return 'warning';
+            return 'success';
+        }
+
+        function getLogBadgeClass(level) {
+            if (level === 'ERROR') return 'danger';
+            if (level === 'WARNING') return 'warning';
+            return 'success';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Make toggleRule available globally
+        window.toggleRule = toggleRule;
+    </script>
+</body>
+</html>
+
